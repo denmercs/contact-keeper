@@ -5,12 +5,19 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 const { check, validationResult } = require("express-validator");
+const authMiddleware = require("../middleware/auth");
 
 // @route       GET        api/auth
 // @desc        Get logged in user
 // @access      Private
-router.get("/", (req, res) => {
-  res.send("Get logged in user");
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const verifieduser = await User.findById(req.user.id).select("-password");
+    res.json(verifieduser);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
 });
 
 // @route       POST        api/auth
@@ -66,7 +73,6 @@ router.post(
       console.error(error.message);
       res.status(500).json("Server Error");
     }
-    res.send("Get login user");
   }
 );
 
